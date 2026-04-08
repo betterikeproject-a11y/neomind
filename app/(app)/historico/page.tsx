@@ -40,11 +40,40 @@ type Goal = {
   progress: number
 }
 
+type Movie = {
+  id: string
+  title: string
+  director: string
+  year: number | null
+  rating: number | null
+  notes: string
+}
+
+type MusicLog = {
+  id: string
+  artist: string
+  album: string
+  track: string
+  genre: string
+  rating: number | null
+}
+
+type Book = {
+  id: string
+  title: string
+  author: string
+  finished_at: string | null
+  rating: number | null
+}
+
 type DayData = {
   checkin: Checkin | null
   journal: JournalEntry | null
   inbox: InboxItem[]
   goals: Goal[]
+  movies: Movie[]
+  music: MusicLog[]
+  booksFinished: Book[]
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -115,7 +144,7 @@ function sliderColor(v: number) {
 
 export default function HistoricoPage() {
   const [date, setDate] = useState(todayISO())
-  const [data, setData] = useState<DayData>({ checkin: null, journal: null, inbox: [], goals: [] })
+  const [data, setData] = useState<DayData>({ checkin: null, journal: null, inbox: [], goals: [], movies: [], music: [], booksFinished: [] })
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
   const today = todayISO()
@@ -127,25 +156,31 @@ export default function HistoricoPage() {
 
     const { start, end } = dayBounds(d)
 
-    const [checkinRes, journalRes, inboxRes, goalsRes] = await Promise.all([
+    const [checkinRes, journalRes, inboxRes, goalsRes, moviesRes, musicRes, booksRes] = await Promise.all([
       supabase.from('daily_checkin').select('*').eq('user_id', user.id).eq('date', d).maybeSingle(),
       supabase.from('journal_entries').select('*').eq('user_id', user.id).eq('date', d).maybeSingle(),
       supabase.from('inbox_items').select('*').eq('user_id', user.id).gte('created_at', start).lte('created_at', end).order('created_at'),
       supabase.from('goals').select('*').eq('user_id', user.id).gte('created_at', start).lte('created_at', end).order('created_at'),
+      supabase.from('movies').select('*').eq('user_id', user.id).eq('watched_at', d).order('created_at'),
+      supabase.from('music_logs').select('*').eq('user_id', user.id).eq('listened_at', d).order('created_at'),
+      supabase.from('books').select('*').eq('user_id', user.id).eq('finished_at', d).order('created_at'),
     ])
 
     setData({
-      checkin: checkinRes.data ?? null,
-      journal: journalRes.data ?? null,
-      inbox:   inboxRes.data  ?? [],
-      goals:   goalsRes.data  ?? [],
+      checkin:       checkinRes.data  ?? null,
+      journal:       journalRes.data  ?? null,
+      inbox:         inboxRes.data    ?? [],
+      goals:         goalsRes.data    ?? [],
+      movies:        moviesRes.data   ?? [],
+      music:         musicRes.data    ?? [],
+      booksFinished: booksRes.data    ?? [],
     })
     setLoading(false)
   }, [supabase])
 
   useEffect(() => { load(date) }, [date, load])
 
-  const isEmpty = !data.checkin && !data.journal && data.inbox.length === 0 && data.goals.length === 0
+  const isEmpty = !data.checkin && !data.journal && data.inbox.length === 0 && data.goals.length === 0 && data.movies.length === 0 && data.music.length === 0 && data.booksFinished.length === 0
   const isToday  = date === today
   const isFuture = date > today
 
@@ -359,6 +394,90 @@ export default function HistoricoPage() {
                 </div>
               )
             })}
+          </div>
+        </section>
+      )}
+
+      {/* Filmes assistidos */}
+      {!loading && data.movies.length > 0 && (
+        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              🎬 Filmes assistidos ({data.movies.length})
+            </h3>
+          </div>
+          <div className="p-5 space-y-3">
+            {data.movies.map(m => (
+              <div key={m.id} className="flex items-start gap-3">
+                <span className="text-base shrink-0">🎬</span>
+                <div>
+                  <p className="text-gray-200 text-sm font-medium">
+                    {m.title}
+                    {m.year && <span className="text-gray-500 font-normal ml-1.5">({m.year})</span>}
+                  </p>
+                  {m.director && <p className="text-gray-500 text-xs">dir. {m.director}</p>}
+                  {m.rating && (
+                    <p className="text-yellow-400 text-xs mt-0.5">{'★'.repeat(m.rating)}{'☆'.repeat(5 - m.rating)}</p>
+                  )}
+                  {m.notes && <p className="text-gray-500 text-sm mt-1">{m.notes}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Músicas ouvidas */}
+      {!loading && data.music.length > 0 && (
+        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              🎵 Músicas ouvidas ({data.music.length})
+            </h3>
+          </div>
+          <div className="p-5 space-y-3">
+            {data.music.map(l => (
+              <div key={l.id} className="flex items-start gap-3">
+                <span className="text-base shrink-0">🎵</span>
+                <div>
+                  <p className="text-gray-200 text-sm font-medium">{l.artist}</p>
+                  {(l.album || l.track) && (
+                    <p className="text-gray-500 text-xs">{[l.album, l.track].filter(Boolean).join(' · ')}</p>
+                  )}
+                  {l.genre && (
+                    <span className="inline-block text-xs text-indigo-400 bg-indigo-950/30 border border-indigo-900/40 px-2 py-0.5 rounded-full mt-1">{l.genre}</span>
+                  )}
+                  {l.rating && (
+                    <p className="text-yellow-400 text-xs mt-0.5">{'★'.repeat(l.rating)}{'☆'.repeat(5 - l.rating)}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Livros terminados */}
+      {!loading && data.booksFinished.length > 0 && (
+        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              📚 Livros terminados ({data.booksFinished.length})
+            </h3>
+          </div>
+          <div className="p-5 space-y-3">
+            {data.booksFinished.map(b => (
+              <div key={b.id} className="flex items-start gap-3">
+                <span className="text-base shrink-0">📚</span>
+                <div>
+                  <p className="text-gray-200 text-sm font-medium">{b.title}</p>
+                  {b.author && <p className="text-gray-500 text-xs">por {b.author}</p>}
+                  {b.rating && (
+                    <p className="text-yellow-400 text-xs mt-0.5">{'★'.repeat(b.rating)}{'☆'.repeat(5 - b.rating)}</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       )}
