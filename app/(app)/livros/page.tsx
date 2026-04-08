@@ -22,8 +22,13 @@ const defaultForm = {
   notes: '', started_at: new Date().toISOString().split('T')[0], finished_at: '',
 }
 
-const inputClass = 'w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors'
-const labelClass = 'text-xs text-gray-500 mb-1.5 block'
+const card   = 'bg-[#252529] rounded-2xl p-5'
+const inp    = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const tarea  = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0 resize-none'
+const sel    = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const cta    = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+const lbl    = 'text-sm text-[#88889a] mb-2 block'
+const div_   = 'border-t border-[rgba(255,255,255,0.07)]'
 
 function Stars({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
@@ -31,7 +36,7 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
       {[1, 2, 3, 4, 5].map(n => (
         <button
           key={n} type="button" onClick={() => onChange(value === n ? 0 : n)}
-          className={`text-2xl leading-none transition-colors ${n <= value ? 'text-yellow-400' : 'text-gray-700 hover:text-yellow-600'}`}
+          className={`text-xl transition-colors ${n <= value ? 'text-[#5b94d6]' : 'text-[#2d2d33] hover:text-[#3d3d4d]'}`}
         >★</button>
       ))}
     </div>
@@ -40,7 +45,7 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
 
 function StarDisplay({ value }: { value: number | null }) {
   if (!value) return null
-  return <span className="text-yellow-400 text-xs">{'★'.repeat(value)}{'☆'.repeat(5 - value)}</span>
+  return <span className="text-[#5b94d6] text-xs">{'★'.repeat(value)}{'☆'.repeat(5 - value)}</span>
 }
 
 export default function LivrosPage() {
@@ -109,92 +114,89 @@ export default function LivrosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-100">Livros</h2>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h2 className="text-3xl font-bold text-[#f0f0f5]">Livros</h2>
+          <p className="text-[#88889a] text-sm mt-1">
             {lendo.length > 0 && `${lendo.length} lendo · `}{lidos.length} lido{lidos.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#252529] text-[#5b94d6] text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-[#2d2d33]"
         >
           {showForm ? 'Cancelar' : '+ Adicionar livro'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-400">Adicionar livro</h3>
+        <form onSubmit={handleSubmit} className={`${card} space-y-4`}>
+          <h3 className="text-sm font-semibold text-[#88889a]">Adicionar livro</h3>
 
           <div>
-            <label className={labelClass}>Título *</label>
+            <label className={lbl}>Título *</label>
             <input
               type="text" required value={form.title}
               onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
               placeholder="Título do livro"
-              className={inputClass}
+              className={inp}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Autor</label>
+              <label className={lbl}>Autor</label>
               <input
                 type="text" value={form.author}
                 onChange={e => setForm(p => ({ ...p, author: e.target.value }))}
                 placeholder="Nome do autor"
-                className={inputClass}
+                className={inp}
               />
             </div>
             <div>
-              <label className={labelClass}>Ano de publicação</label>
+              <label className={lbl}>Ano de publicação</label>
               <input
                 type="number" value={form.year} min={1000} max={new Date().getFullYear() + 2}
                 onChange={e => setForm(p => ({ ...p, year: e.target.value }))}
                 placeholder="ex: 1984"
-                className={inputClass}
+                className={inp}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Comecei a ler em</label>
+              <label className={lbl}>Comecei a ler em</label>
               <input
                 type="date" value={form.started_at}
                 onChange={e => setForm(p => ({ ...p, started_at: e.target.value }))}
-                className={inputClass}
+                className={inp}
               />
             </div>
             <div>
-              <label className={labelClass}>Terminei em (opcional)</label>
+              <label className={lbl}>Terminei em (opcional)</label>
               <input
                 type="date" value={form.finished_at} min={form.started_at}
                 onChange={e => setForm(p => ({ ...p, finished_at: e.target.value }))}
-                className={inputClass}
+                className={inp}
               />
             </div>
           </div>
 
           <div>
-            <label className={labelClass}>Avaliação</label>
+            <label className={lbl}>Avaliação</label>
             <Stars value={form.rating} onChange={v => setForm(p => ({ ...p, rating: v }))} />
           </div>
 
           <div>
-            <label className={labelClass}>Notas / impressões</label>
+            <label className={lbl}>Notas / impressões</label>
             <textarea
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
               rows={3} placeholder="O que aprendi, o que me marcou..."
-              className={inputClass + ' resize-none'}
+              className={tarea}
             />
           </div>
 
-          <button
-            type="submit" disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
+          <button type="submit" disabled={saving} className={cta}>
             {saving ? 'Salvando...' : 'Salvar livro'}
           </button>
         </form>
@@ -211,8 +213,8 @@ export default function LivrosPage() {
             <button
               key={tab.value}
               onClick={() => setFilter(tab.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                filter === tab.value ? 'text-gray-100 bg-gray-700 border-gray-600' : 'text-gray-500 border-gray-800 hover:border-gray-700'
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+                filter === tab.value ? 'bg-[#1f2d45] text-[#5b94d6]' : 'text-[#88889a] bg-[#252529] hover:bg-[#2d2d33]'
               }`}
             >
               {tab.label}
@@ -223,7 +225,7 @@ export default function LivrosPage() {
 
       {/* List */}
       {books.length === 0 && (
-        <div className="text-center py-16 text-gray-600">
+        <div className="text-center py-16 text-[#4a4a5a]">
           <p className="text-4xl mb-3">📚</p>
           <p className="text-sm">Nenhum livro adicionado ainda</p>
         </div>
@@ -233,34 +235,34 @@ export default function LivrosPage() {
         {filtered.map(b => {
           const isReading = !!b.started_at && !b.finished_at
           return (
-            <div key={b.id} className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-3">
+            <div key={b.id} className={`${card} space-y-3`}>
               <div className="flex items-start gap-4">
                 <span className="text-2xl mt-0.5 shrink-0">📚</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-gray-100 font-medium">
+                      <p className="text-[#f0f0f5] font-medium">
                         {b.title}
-                        {b.year && <span className="text-gray-500 text-sm font-normal ml-2">({b.year})</span>}
+                        {b.year && <span className="text-[#88889a] text-sm font-normal ml-2">({b.year})</span>}
                       </p>
-                      {b.author && <p className="text-gray-500 text-sm">por {b.author}</p>}
+                      {b.author && <p className="text-[#88889a] text-sm">por {b.author}</p>}
                     </div>
                     <button
                       onClick={() => handleDelete(b.id)}
-                      className="text-gray-700 hover:text-red-400 transition-colors shrink-0 text-lg leading-none"
+                      className="text-[#4a4a5a] hover:text-red-400 transition-colors shrink-0 text-lg leading-none"
                     >×</button>
                   </div>
 
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
                     {isReading ? (
-                      <span className="text-xs text-green-400 bg-green-950/40 border border-green-800/50 px-2 py-0.5 rounded-full">Lendo</span>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-[#1f2d45] text-[#5b94d6]">Lendo</span>
                     ) : b.finished_at ? (
-                      <span className="text-xs text-blue-400 bg-blue-950/40 border border-blue-800/50 px-2 py-0.5 rounded-full">Lido</span>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-[#2d2d33] text-[#88889a]">Lido</span>
                     ) : null}
                     <StarDisplay value={b.rating} />
                   </div>
 
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-600 flex-wrap">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-[#4a4a5a] flex-wrap">
                     {b.started_at && (
                       <span>Início: {new Date(b.started_at + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
                     )}
@@ -269,17 +271,19 @@ export default function LivrosPage() {
                     )}
                   </div>
 
-                  {b.notes && <p className="text-gray-500 text-sm mt-2 leading-relaxed">{b.notes}</p>}
+                  {b.notes && <p className="text-[#88889a] text-sm mt-2 leading-relaxed">{b.notes}</p>}
                 </div>
               </div>
 
               {isReading && (
-                <button
-                  onClick={() => markFinished(b.id)}
-                  className="text-xs text-blue-400 border border-blue-800/50 px-3 py-1.5 rounded-lg hover:bg-blue-950/30 transition-colors"
-                >
-                  ✓ Marcar como lido
-                </button>
+                <div className={div_}>
+                  <button
+                    onClick={() => markFinished(b.id)}
+                    className="mt-3 text-xs text-[#5b94d6] bg-[#1f2d45] px-3 py-1.5 rounded-xl hover:bg-[#243553] transition-colors"
+                  >
+                    ✓ Marcar como lido
+                  </button>
+                </div>
               )}
             </div>
           )
