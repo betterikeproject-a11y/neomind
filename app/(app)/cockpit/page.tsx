@@ -87,7 +87,7 @@ export default function CockpitPage() {
       {/* Header */}
       <div>
         <p className="text-[#88889a] text-sm capitalize">{dateStr}</p>
-        <h2 className="text-4xl font-bold text-[#f0f0f5] mt-1">{greeting()}</h2>
+        <h2 className="text-4xl font-bold text-[#f0f0f5] mt-1">Cockpit Test</h2>
       </div>
 
       {/* Missão */}
