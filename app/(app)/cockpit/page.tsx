@@ -3,13 +3,20 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// ─── Design constants ─────────────────────────────────────────────────────────
+const card  = 'bg-[#252529] rounded-2xl p-5'
+const inp   = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const tarea = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0 resize-none'
+const cta   = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SLIDERS = [
-  { key: 'humor', label: 'Humor', emoji: '😊' },
-  { key: 'energia', label: 'Energia', emoji: '⚡' },
-  { key: 'foco', label: 'Foco', emoji: '🎯' },
-  { key: 'ansiedade', label: 'Ansiedade', emoji: '😰' },
-  { key: 'sono', label: 'Sono', emoji: '😴' },
-  { key: 'clareza', label: 'Clareza', emoji: '💡' },
+  { key: 'humor',    label: 'Humor',    emoji: '😊' },
+  { key: 'energia',  label: 'Energia',  emoji: '⚡' },
+  { key: 'foco',     label: 'Foco',     emoji: '🎯' },
+  { key: 'ansiedade',label: 'Ansiedade',emoji: '😰' },
+  { key: 'sono',     label: 'Sono',     emoji: '😴' },
+  { key: 'clareza',  label: 'Clareza',  emoji: '💡' },
 ] as const
 
 type SliderKey = typeof SLIDERS[number]['key']
@@ -17,15 +24,9 @@ type SliderKey = typeof SLIDERS[number]['key']
 type Checkin = {
   id?: string
   mission: string
-  humor: number
-  energia: number
-  foco: number
-  ansiedade: number
-  sono: number
-  clareza: number
-  bloco_manha: string
-  bloco_tarde: string
-  bloco_noite: string
+  humor: number; energia: number; foco: number
+  ansiedade: number; sono: number; clareza: number
+  bloco_manha: string; bloco_tarde: string; bloco_noite: string
 }
 
 const defaultCheckin: Checkin = {
@@ -34,32 +35,27 @@ const defaultCheckin: Checkin = {
   bloco_manha: '', bloco_tarde: '', bloco_noite: '',
 }
 
+function greeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Bom dia.'
+  if (h < 18) return 'Boa tarde.'
+  return 'Boa noite.'
+}
+
 export default function CockpitPage() {
   const [checkin, setCheckin] = useState<Checkin>(defaultCheckin)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [missionAlert, setMissionAlert] = useState(false)
   const supabase = createClient()
-
   const today = new Date().toISOString().split('T')[0]
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
     const { data } = await supabase
-      .from('daily_checkin')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('date', today)
-      .single()
-
-    if (data) {
-      setCheckin(data)
-      setMissionAlert(!data.mission)
-    } else {
-      setMissionAlert(true)
-    }
+      .from('daily_checkin').select('*')
+      .eq('user_id', user.id).eq('date', today).single()
+    if (data) setCheckin(data)
   }, [supabase, today])
 
   useEffect(() => { load() }, [load])
@@ -68,19 +64,14 @@ export default function CockpitPage() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
     const payload = { ...checkin, user_id: user.id, date: today }
-
     if (checkin.id) {
       await supabase.from('daily_checkin').update(payload).eq('id', checkin.id)
     } else {
       const { data } = await supabase.from('daily_checkin').insert(payload).select().single()
       if (data) setCheckin(data)
     }
-
-    setSaving(false)
-    setSaved(true)
-    setMissionAlert(!checkin.mission)
+    setSaving(false); setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
 
@@ -88,91 +79,76 @@ export default function CockpitPage() {
     setCheckin(prev => ({ ...prev, [key]: value }))
   }
 
-  const sliderColor = (v: number) => {
-    if (v <= 3) return 'accent-red-500'
-    if (v <= 6) return 'accent-yellow-500'
-    return 'accent-green-500'
-  }
+  const dateStr = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100">Cockpit</h2>
-          <p className="text-gray-500 text-sm mt-0.5">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          {saving ? 'Salvando...' : saved ? '✓ Salvo' : 'Salvar'}
-        </button>
+    <div className="space-y-5">
+
+      {/* Header */}
+      <div>
+        <p className="text-[#88889a] text-sm capitalize">{dateStr}</p>
+        <h2 className="text-4xl font-bold text-[#f0f0f5] mt-1">{greeting()}</h2>
       </div>
 
-      {missionAlert && (
-        <div className="bg-amber-950/40 border border-amber-800/50 rounded-xl px-4 py-3 text-amber-400 text-sm flex items-center gap-2">
-          <span>⚠️</span> Você ainda não definiu sua missão do dia.
-        </div>
-      )}
-
-      {/* Missão do dia */}
-      <section className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Missão do dia</h3>
+      {/* Missão */}
+      <div className={card}>
+        <p className="text-[#88889a] text-sm mb-3">Hoje sua missão principal é:</p>
         <input
           type="text"
           value={checkin.mission}
-          onChange={e => setCheckin(prev => ({ ...prev, mission: e.target.value }))}
-          placeholder="Uma frase que define o que você quer conquistar hoje..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+          onChange={e => setCheckin(p => ({ ...p, mission: e.target.value }))}
+          placeholder="+ Definir missão do dia"
+          className={inp}
         />
-      </section>
+      </div>
 
-      {/* Check-in sliders */}
-      <section className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Estado atual</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Estado mental */}
+      <div className={card}>
+        <p className="text-[#88889a] text-sm mb-4">Estado mental:</p>
+        <div className="space-y-4">
           {SLIDERS.map(({ key, label, emoji }) => (
             <div key={key}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm text-gray-300">{emoji} {label}</span>
-                <span className="text-sm font-bold text-gray-200 w-6 text-right">{checkin[key]}</span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-[#f0f0f5]">{emoji} {label}</span>
+                <span className="text-sm font-semibold text-[#5b94d6] w-6 text-right">{checkin[key]}</span>
               </div>
               <input
-                type="range"
-                min={1}
-                max={10}
+                type="range" min={1} max={10}
                 value={checkin[key]}
                 onChange={e => setSlider(key, Number(e.target.value))}
-                className={`w-full h-1.5 ${sliderColor(checkin[key])}`}
+                className="w-full"
               />
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
       {/* Dia em blocos */}
-      <section className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Dia em blocos</h3>
+      <div className={card}>
+        <p className="text-[#88889a] text-sm mb-4">Dia em blocos:</p>
         <div className="space-y-3">
           {[
-            { key: 'bloco_manha', label: '🌅 Manhã' },
-            { key: 'bloco_tarde', label: '☀️ Tarde' },
-            { key: 'bloco_noite', label: '🌙 Noite' },
-          ].map(({ key, label }) => (
+            { key: 'bloco_manha', label: '🌅 Manhã',  ph: 'O que você planeja para a manhã...' },
+            { key: 'bloco_tarde', label: '☀️ Tarde',  ph: 'O que você planeja para a tarde...' },
+            { key: 'bloco_noite', label: '🌙 Noite',  ph: 'O que você planeja para a noite...' },
+          ].map(({ key, label, ph }) => (
             <div key={key}>
-              <label className="text-xs text-gray-500 mb-1 block">{label}</label>
+              <p className="text-xs text-[#4a4a5a] mb-1.5">{label}</p>
               <textarea
                 value={checkin[key as keyof Checkin] as string}
-                onChange={e => setCheckin(prev => ({ ...prev, [key]: e.target.value }))}
-                rows={2}
-                placeholder={`O que você planeja / fez na ${label.split(' ')[1].toLowerCase()}...`}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                onChange={e => setCheckin(p => ({ ...p, [key]: e.target.value }))}
+                rows={2} placeholder={ph}
+                className={tarea}
               />
             </div>
           ))}
         </div>
-      </section>
+      </div>
+
+      {/* CTA */}
+      <button onClick={handleSave} disabled={saving} className={cta}>
+        {saving ? 'Salvando...' : saved ? '✓ Salvo' : 'Salvar dia'}
+      </button>
     </div>
   )
 }
