@@ -3,26 +3,32 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// ─── Design constants ─────────────────────────────────────────────────────────
+const card  = 'bg-[#252529] rounded-2xl p-5'
+const tarea = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0 resize-none'
+const cta   = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+// ─────────────────────────────────────────────────────────────────────────────
+
 type JournalMode = 'cru' | 'poetico'
 
 type JournalEntry = {
-  id: string
-  date: string
-  raw_content: string
-  poetic_content: string | null
-  mode: JournalMode
+  id: string; date: string; raw_content: string
+  poetic_content: string | null; mode: JournalMode
 }
 
 type FormState = {
-  what_happened: string
-  how_i_felt: string
-  what_i_avoided: string
-  mode: JournalMode
+  what_happened: string; how_i_felt: string; what_i_avoided: string; mode: JournalMode
 }
 
 const defaultForm: FormState = {
   what_happened: '', how_i_felt: '', what_i_avoided: '', mode: 'cru',
 }
+
+const PROMPTS = [
+  { key: 'what_happened', prompt: 'O que aconteceu?' },
+  { key: 'how_i_felt',    prompt: 'Como me senti?'  },
+  { key: 'what_i_avoided',prompt: 'O que evitei?'   },
+]
 
 export default function DiarioPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([])
@@ -32,31 +38,22 @@ export default function DiarioPage() {
   const [poetizing, setPoetizing] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const supabase = createClient()
-
   const today = new Date().toISOString().split('T')[0]
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
     const { data } = await supabase
-      .from('journal_entries')
-      .select('*')
-      .eq('user_id', user.id)
+      .from('journal_entries').select('*').eq('user_id', user.id)
       .order('date', { ascending: false })
-
     if (data) {
       setEntries(data)
       const te = data.find(e => e.date === today)
       if (te) {
         setTodayEntry(te)
         const parts = te.raw_content.split('\n---\n')
-        setForm({
-          what_happened: parts[0] || '',
-          how_i_felt: parts[1] || '',
-          what_i_avoided: parts[2] || '',
-          mode: te.mode,
-        })
+        setForm({ what_happened: parts[0] || '', how_i_felt: parts[1] || '',
+          what_i_avoided: parts[2] || '', mode: te.mode })
       }
     }
   }, [supabase, today])
@@ -66,7 +63,6 @@ export default function DiarioPage() {
   async function handleSave() {
     if (!form.what_happened.trim() && !form.how_i_felt.trim() && !form.what_i_avoided.trim()) return
     setSaving(true)
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSaving(false); return }
 
@@ -77,15 +73,12 @@ export default function DiarioPage() {
       setPoetizing(true)
       try {
         const res = await fetch('/api/poeticize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: raw_content }),
         })
         const json = await res.json()
         poetic_content = json.result || null
-      } catch {
-        poetic_content = null
-      }
+      } catch { poetic_content = null }
       setPoetizing(false)
     }
 
@@ -93,39 +86,37 @@ export default function DiarioPage() {
 
     if (todayEntry) {
       const { data } = await supabase.from('journal_entries').update(payload).eq('id', todayEntry.id).select().single()
-      if (data) {
-        setTodayEntry(data)
-        setEntries(prev => prev.map(e => e.id === data.id ? data : e))
-      }
+      if (data) { setTodayEntry(data); setEntries(prev => prev.map(e => e.id === data.id ? data : e)) }
     } else {
       const { data } = await supabase.from('journal_entries').insert(payload).select().single()
-      if (data) {
-        setTodayEntry(data)
-        setEntries(prev => [data, ...prev])
-      }
+      if (data) { setTodayEntry(data); setEntries(prev => [data, ...prev]) }
     }
-
     setSaving(false)
   }
 
   const pastEntries = entries.filter(e => e.date !== today)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+
+      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-100">Diário</h2>
-        <p className="text-gray-500 text-sm mt-0.5">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+        <h2 className="text-3xl font-bold text-[#f0f0f5]">Diário</h2>
+        <p className="text-[#88889a] text-sm mt-1">
+          {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </p>
       </div>
 
       {/* Today's entry */}
-      <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-4">
+      <div className={card + ' space-y-5'}>
+        {/* Mode toggle */}
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Hoje</h3>
-          <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1">
+          <p className="text-[#88889a] text-sm">Hoje</p>
+          <div className="flex items-center gap-1 bg-[#2d2d33] rounded-lg p-1">
             <button
               onClick={() => setForm(p => ({ ...p, mode: 'cru' }))}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                form.mode === 'cru' ? 'bg-gray-700 text-gray-200' : 'text-gray-500 hover:text-gray-400'
+                form.mode === 'cru' ? 'bg-[#252529] text-[#f0f0f5]' : 'text-[#4a4a5a] hover:text-[#88889a]'
               }`}
             >
               Cru
@@ -133,7 +124,9 @@ export default function DiarioPage() {
             <button
               onClick={() => setForm(p => ({ ...p, mode: 'poetico' }))}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                form.mode === 'poetico' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:text-gray-400'
+                form.mode === 'poetico'
+                  ? 'bg-[#1f2d45] text-[#5b94d6]'
+                  : 'text-[#4a4a5a] hover:text-[#88889a]'
               }`}
             >
               ✨ Poético
@@ -142,104 +135,90 @@ export default function DiarioPage() {
         </div>
 
         {form.mode === 'poetico' && (
-          <p className="text-xs text-indigo-400 bg-indigo-950/30 border border-indigo-900/50 rounded-lg px-3 py-2">
+          <p className="text-xs text-[#5b94d6] bg-[#1f2d45] rounded-xl px-4 py-3">
             Ao salvar, Claude vai transformar seu texto em prosa poética.
           </p>
         )}
 
+        {/* Prompts */}
         <div className="space-y-3">
-          {[
-            { key: 'what_happened', prompt: 'O que aconteceu?' },
-            { key: 'how_i_felt', prompt: 'Como me senti?' },
-            { key: 'what_i_avoided', prompt: 'O que evitei?' },
-          ].map(({ key, prompt }) => (
+          {PROMPTS.map(({ key, prompt }) => (
             <div key={key}>
-              <label className="text-xs text-gray-500 mb-1.5 block">{prompt}</label>
+              <p className="text-xs text-[#4a4a5a] mb-1.5">{prompt}</p>
               <textarea
                 value={form[key as keyof FormState] as string}
                 onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                rows={3}
-                placeholder={`${prompt}...`}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                rows={3} placeholder={`${prompt}...`}
+                className={tarea}
               />
             </div>
           ))}
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={saving || poetizing}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
+        <button onClick={handleSave} disabled={saving || poetizing} className={cta}>
           {poetizing ? '✨ Poetizando...' : saving ? 'Salvando...' : todayEntry ? 'Atualizar' : 'Salvar'}
         </button>
 
-        {/* Show poetic result */}
+        {/* Poetic result */}
         {todayEntry?.poetic_content && form.mode === 'poetico' && (
-          <div className="bg-gray-800/50 border border-indigo-900/30 rounded-xl p-4 mt-2">
-            <p className="text-xs text-indigo-400 mb-2 font-medium">Versão poética</p>
-            <p className="text-gray-300 text-sm leading-relaxed italic whitespace-pre-wrap">{todayEntry.poetic_content}</p>
+          <div className="bg-[#2d2d33] rounded-xl p-4">
+            <p className="text-xs text-[#5b94d6] mb-2 font-medium">Versão poética</p>
+            <p className="text-[#f0f0f5] text-sm leading-relaxed italic whitespace-pre-wrap">
+              {todayEntry.poetic_content}
+            </p>
           </div>
         )}
       </div>
 
       {/* Past entries */}
       {pastEntries.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Entradas anteriores</h3>
-          {pastEntries.map(entry => {
-            const parts = entry.raw_content.split('\n---\n')
-            const isExpanded = expandedId === entry.id
-            return (
-              <div
-                key={entry.id}
-                className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden"
-              >
-                <button
-                  onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-300">
-                      {new Date(entry.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
-                    </span>
-                    {entry.mode === 'poetico' && entry.poetic_content && (
-                      <span className="text-xs text-indigo-400">✨</span>
-                    )}
-                  </div>
-                  <span className="text-gray-600 text-sm">{isExpanded ? '▲' : '▼'}</span>
-                </button>
-                {isExpanded && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-gray-800 pt-3">
-                    {parts[0] && (
-                      <div>
-                        <p className="text-xs text-gray-600 mb-1">O que aconteceu?</p>
-                        <p className="text-gray-300 text-sm">{parts[0]}</p>
-                      </div>
-                    )}
-                    {parts[1] && (
-                      <div>
-                        <p className="text-xs text-gray-600 mb-1">Como me senti?</p>
-                        <p className="text-gray-300 text-sm">{parts[1]}</p>
-                      </div>
-                    )}
-                    {parts[2] && (
-                      <div>
-                        <p className="text-xs text-gray-600 mb-1">O que evitei?</p>
-                        <p className="text-gray-300 text-sm">{parts[2]}</p>
-                      </div>
-                    )}
-                    {entry.mode === 'poetico' && entry.poetic_content && (
-                      <div className="bg-gray-800/50 border border-indigo-900/30 rounded-xl p-4 mt-2">
-                        <p className="text-xs text-indigo-400 mb-2">Versão poética</p>
-                        <p className="text-gray-300 text-sm leading-relaxed italic whitespace-pre-wrap">{entry.poetic_content}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+        <div>
+          <p className="text-xs text-[#88889a] uppercase tracking-wider font-semibold mb-3">Entradas anteriores</p>
+          <div className="bg-[#252529] rounded-2xl overflow-hidden divide-y divide-[rgba(255,255,255,0.07)]">
+            {pastEntries.map(entry => {
+              const parts = entry.raw_content.split('\n---\n')
+              const isExpanded = expandedId === entry.id
+              return (
+                <div key={entry.id}>
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#2d2d33] transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-[#f0f0f5]">
+                        {new Date(entry.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </span>
+                      {entry.mode === 'poetico' && entry.poetic_content && (
+                        <span className="text-xs text-[#5b94d6]">✨</span>
+                      )}
+                    </div>
+                    <span className="text-[#4a4a5a] text-sm">{isExpanded ? '▲' : '▼'}</span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-5 pb-5 space-y-3">
+                      {PROMPTS.map(({ key, prompt }, i) => (
+                        parts[i] ? (
+                          <div key={key}>
+                            <p className="text-xs text-[#4a4a5a] mb-1">{prompt}</p>
+                            <p className="text-[#f0f0f5] text-sm leading-relaxed">{parts[i]}</p>
+                          </div>
+                        ) : null
+                      ))}
+                      {entry.mode === 'poetico' && entry.poetic_content && (
+                        <div className="bg-[#2d2d33] rounded-xl p-4 mt-2">
+                          <p className="text-xs text-[#5b94d6] mb-2">Versão poética</p>
+                          <p className="text-[#f0f0f5] text-sm leading-relaxed italic whitespace-pre-wrap">
+                            {entry.poetic_content}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

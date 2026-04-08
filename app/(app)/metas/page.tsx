@@ -3,34 +3,36 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// ─── Design constants ─────────────────────────────────────────────────────────
+const card  = 'bg-[#252529] rounded-2xl p-5'
+const inp   = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const tarea = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0 resize-none'
+const cta   = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+const lbl   = 'text-sm text-[#88889a] mb-3 block'
+// ─────────────────────────────────────────────────────────────────────────────
+
 type Area = 'trabalho' | 'mente' | 'corpo' | 'dinheiro' | 'social'
 type Status = 'feito' | 'avancou' | 'travou' | 'abandonei'
 type DeadlineDays = 14 | 30 | 90
 
 type Goal = {
-  id: string
-  title: string
-  area: Area
-  deadline_days: DeadlineDays
-  status: Status
-  contingency: string
-  progress: number
-  created_at: string
+  id: string; title: string; area: Area; deadline_days: DeadlineDays
+  status: Status; contingency: string; progress: number; created_at: string
 }
 
 const AREAS: { value: Area; label: string; emoji: string }[] = [
   { value: 'trabalho', label: 'Trabalho', emoji: '💼' },
-  { value: 'mente', label: 'Mente', emoji: '🧠' },
-  { value: 'corpo', label: 'Corpo', emoji: '💪' },
+  { value: 'mente',    label: 'Mente',    emoji: '🧠' },
+  { value: 'corpo',    label: 'Corpo',    emoji: '💪' },
   { value: 'dinheiro', label: 'Dinheiro', emoji: '💰' },
-  { value: 'social', label: 'Social', emoji: '🤝' },
+  { value: 'social',   label: 'Social',   emoji: '🤝' },
 ]
 
-const STATUSES: { value: Status; label: string; color: string }[] = [
-  { value: 'feito', label: 'Feito', color: 'text-green-400 bg-green-950/40 border-green-800/50' },
-  { value: 'avancou', label: 'Avançou', color: 'text-blue-400 bg-blue-950/40 border-blue-800/50' },
-  { value: 'travou', label: 'Travou', color: 'text-orange-400 bg-orange-950/40 border-orange-800/50' },
-  { value: 'abandonei', label: 'Abandonei', color: 'text-gray-500 bg-gray-800/40 border-gray-700/50' },
+const STATUSES: { value: Status; label: string; color: string; dim: string }[] = [
+  { value: 'feito',     label: 'Feito',    color: 'text-[#5bd68a]', dim: 'bg-[#1f2d24]' },
+  { value: 'avancou',   label: 'Avançou',  color: 'text-[#5b94d6]', dim: 'bg-[#1f2d45]' },
+  { value: 'travou',    label: 'Travou',   color: 'text-[#d6a35b]', dim: 'bg-[#2d2419]' },
+  { value: 'abandonei', label: 'Abandonei',color: 'text-[#88889a]', dim: 'bg-[#25252a]' },
 ]
 
 const defaultForm = {
@@ -49,10 +51,7 @@ export default function MetasPage() {
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { data } = await supabase
-      .from('goals')
-      .select('*')
-      .eq('user_id', user.id)
+    const { data } = await supabase.from('goals').select('*').eq('user_id', user.id)
       .order('created_at', { ascending: false })
     if (data) setGoals(data)
   }, [supabase])
@@ -65,7 +64,6 @@ export default function MetasPage() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
     if (editId) {
       const { data } = await supabase.from('goals').update(form).eq('id', editId).select().single()
       if (data) setGoals(prev => prev.map(g => g.id === editId ? data : g))
@@ -73,11 +71,7 @@ export default function MetasPage() {
       const { data } = await supabase.from('goals').insert({ ...form, user_id: user.id }).select().single()
       if (data) setGoals(prev => [data, ...prev])
     }
-
-    setForm(defaultForm)
-    setShowForm(false)
-    setEditId(null)
-    setSaving(false)
+    setForm(defaultForm); setShowForm(false); setEditId(null); setSaving(false)
   }
 
   async function handleDelete(id: string) {
@@ -96,146 +90,163 @@ export default function MetasPage() {
   }
 
   function startEdit(goal: Goal) {
-    setForm({
-      title: goal.title, area: goal.area, deadline_days: goal.deadline_days,
-      status: goal.status, contingency: goal.contingency, progress: goal.progress,
-    })
-    setEditId(goal.id)
-    setShowForm(true)
+    setForm({ title: goal.title, area: goal.area, deadline_days: goal.deadline_days,
+      status: goal.status, contingency: goal.contingency, progress: goal.progress })
+    setEditId(goal.id); setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const getArea = (v: Area) => AREAS.find(a => a.value === v)!
+  const getArea   = (v: Area)   => AREAS.find(a => a.value === v)!
+  const getStatus = (v: Status) => STATUSES.find(s => s.value === v)!
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-100">Metas</h2>
-          <p className="text-gray-500 text-sm mt-0.5">{goals.length} meta{goals.length !== 1 ? 's' : ''} ativa{goals.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-3xl font-bold text-[#f0f0f5]">Metas</h2>
+          <p className="text-[#88889a] text-sm mt-1">{goals.length} meta{goals.length !== 1 ? 's' : ''}</p>
         </div>
         <button
           onClick={() => { setShowForm(!showForm); setEditId(null); setForm(defaultForm) }}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#252529] text-[#5b94d6] text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-[#2d2d33]"
         >
           {showForm ? 'Cancelar' : '+ Nova meta'}
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-400">{editId ? 'Editar meta' : 'Nova meta'}</h3>
-
-          <input
-            type="text"
-            value={form.title}
-            onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-            placeholder="Título da meta"
-            required
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500"
-          />
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-500 mb-1.5 block">Área</label>
-              <select
-                value={form.area}
-                onChange={e => setForm(p => ({ ...p, area: e.target.value as Area }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500"
-              >
-                {AREAS.map(a => <option key={a.value} value={a.value}>{a.emoji} {a.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 mb-1.5 block">Prazo</label>
-              <select
-                value={form.deadline_days}
-                onChange={e => setForm(p => ({ ...p, deadline_days: Number(e.target.value) as DeadlineDays }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500"
-              >
-                <option value={14}>14 dias</option>
-                <option value={30}>30 dias</option>
-                <option value={90}>90 dias</option>
-              </select>
-            </div>
-          </div>
-
+        <form onSubmit={handleSubmit} className={card + ' space-y-5'}>
           <div>
-            <label className="text-xs text-gray-500 mb-1.5 block">Se travar, faço o quê?</label>
-            <textarea
-              value={form.contingency}
-              onChange={e => setForm(p => ({ ...p, contingency: e.target.value }))}
-              rows={2}
-              placeholder="Plano de contingência..."
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 resize-none"
+            <label className={lbl}>Título *</label>
+            <input type="text" required value={form.title}
+              onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+              placeholder="Qual é a sua meta?"
+              className={inp}
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            {saving ? 'Salvando...' : editId ? 'Atualizar' : 'Criar meta'}
+          {/* Area — radio style */}
+          <div>
+            <label className={lbl}>Em qual área?</label>
+            <div className={`bg-[#2d2d33] rounded-xl overflow-hidden divide-y divide-[rgba(255,255,255,0.06)]`}>
+              {AREAS.map(a => (
+                <button
+                  key={a.value} type="button"
+                  onClick={() => setForm(p => ({ ...p, area: a.value }))}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#33333d]"
+                >
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    form.area === a.value ? 'border-[#5b94d6]' : 'border-[#4a4a5a]'
+                  }`}>
+                    {form.area === a.value && <div className="w-2 h-2 rounded-full bg-[#5b94d6]" />}
+                  </div>
+                  <span className={`text-sm ${form.area === a.value ? 'text-[#f0f0f5]' : 'text-[#88889a]'}`}>
+                    {a.emoji} {a.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Deadline — pill buttons */}
+          <div>
+            <label className={lbl}>Prazo:</label>
+            <div className="flex gap-2">
+              {([14, 30, 90] as DeadlineDays[]).map(d => (
+                <button
+                  key={d} type="button"
+                  onClick={() => setForm(p => ({ ...p, deadline_days: d }))}
+                  className={`flex-1 py-3 rounded-xl text-sm font-medium transition-colors ${
+                    form.deadline_days === d
+                      ? 'bg-[#1f2d45] text-[#5b94d6]'
+                      : 'bg-[#2d2d33] text-[#88889a] hover:text-[#f0f0f5]'
+                  }`}
+                >
+                  {d} dias
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Contingency */}
+          <div>
+            <label className={lbl}>Se travar, faço o quê?</label>
+            <textarea
+              value={form.contingency}
+              onChange={e => setForm(p => ({ ...p, contingency: e.target.value }))}
+              rows={2} placeholder="Plano de contingência..."
+              className={tarea}
+            />
+          </div>
+
+          <button type="submit" disabled={saving} className={cta}>
+            {saving ? 'Salvando...' : editId ? 'Atualizar meta' : 'Criar meta'}
           </button>
         </form>
       )}
 
+      {/* List */}
+      {goals.length === 0 && !showForm && (
+        <div className="text-center py-16 text-[#4a4a5a]">
+          <p className="text-4xl mb-3">🎯</p>
+          <p className="text-sm">Nenhuma meta criada ainda</p>
+        </div>
+      )}
+
       <div className="space-y-3">
-        {goals.length === 0 && (
-          <div className="text-center py-12 text-gray-600 text-sm">Nenhuma meta criada ainda</div>
-        )}
         {goals.map(goal => {
-          const area = getArea(goal.area)
+          const area   = getArea(goal.area)
+          const status = getStatus(goal.status)
           return (
-            <div key={goal.id} className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-3">
+            <div key={goal.id} className={card + ' space-y-4'}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-gray-500">{area.emoji} {area.label}</span>
-                    <span className="text-xs text-gray-600">·</span>
-                    <span className="text-xs text-gray-500">{goal.deadline_days} dias</span>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-[#88889a]">{area.emoji} {area.label}</span>
+                    <span className="text-[#4a4a5a] text-xs">·</span>
+                    <span className="text-xs text-[#88889a]">{goal.deadline_days} dias</span>
                   </div>
-                  <h4 className="text-gray-100 font-medium mt-1">{goal.title}</h4>
+                  <h4 className="text-[#f0f0f5] font-medium">{goal.title}</h4>
                   {goal.contingency && (
-                    <p className="text-gray-500 text-xs mt-1">🔄 {goal.contingency}</p>
+                    <p className="text-[#4a4a5a] text-xs mt-1">🔄 {goal.contingency}</p>
                   )}
                 </div>
-                <div className="flex gap-1.5 shrink-0">
-                  <button onClick={() => startEdit(goal)} className="text-gray-600 hover:text-gray-300 text-sm px-2 py-1 rounded transition-colors">✏️</button>
-                  <button onClick={() => handleDelete(goal.id)} className="text-gray-600 hover:text-red-400 text-sm px-2 py-1 rounded transition-colors">🗑️</button>
+                <div className="flex gap-1 shrink-0">
+                  <button onClick={() => startEdit(goal)}
+                    className="text-[#4a4a5a] hover:text-[#88889a] px-2 py-1 rounded-lg transition-colors text-sm">✏️</button>
+                  <button onClick={() => handleDelete(goal.id)}
+                    className="text-[#4a4a5a] hover:text-[#d66b5b] px-2 py-1 rounded-lg transition-colors text-sm">🗑️</button>
                 </div>
               </div>
 
-              {/* Progress bar */}
+              {/* Progress */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-gray-500">Progresso</span>
-                  <span className="text-xs text-gray-400 font-medium">{goal.progress}%</span>
+                <div className="flex justify-between mb-2">
+                  <span className="text-xs text-[#88889a]">Progresso</span>
+                  <span className="text-xs text-[#5b94d6] font-medium">{goal.progress}%</span>
                 </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={goal.progress}
+                <input type="range" min={0} max={100} value={goal.progress}
                   onChange={e => handleProgressUpdate(goal.id, Number(e.target.value))}
-                  className="w-full accent-indigo-500"
+                  className="w-full"
                 />
-                <div className="mt-1.5 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-indigo-500 rounded-full transition-all"
-                    style={{ width: `${goal.progress}%` }}
-                  />
+                <div className="mt-2 h-1 bg-[#2d2d33] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#5b94d6] rounded-full transition-all" style={{ width: `${goal.progress}%` }} />
                 </div>
               </div>
 
               {/* Status */}
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 {STATUSES.map(s => (
                   <button
                     key={s.value}
                     onClick={() => handleStatusUpdate(goal.id, s.value)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                      goal.status === s.value ? s.color : 'text-gray-600 border-gray-800 hover:border-gray-700'
+                    className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                      goal.status === s.value
+                        ? `${s.dim} ${s.color}`
+                        : 'bg-[#2d2d33] text-[#4a4a5a] hover:text-[#88889a]'
                     }`}
                   >
                     {s.label}

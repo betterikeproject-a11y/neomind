@@ -4,10 +4,11 @@ import Sidebar from '@/components/Sidebar'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-nm-bg">
       <Sidebar />
-      <main className="md:ml-56 pt-16 md:pt-0 min-h-screen">
-        <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* pb-20 = space for mobile bottom tab bar, md:ml-60 = desktop sidebar */}
+      <main className="md:ml-60 pb-24 md:pb-0 min-h-screen">
+        <div className="max-w-2xl mx-auto px-5 py-8">
           {children}
         </div>
       </main>

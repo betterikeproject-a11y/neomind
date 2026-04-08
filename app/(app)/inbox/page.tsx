@@ -3,13 +3,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// ─── Design constants ─────────────────────────────────────────────────────────
+const card  = 'bg-[#252529] rounded-2xl p-5'
+const tarea = 'w-full bg-transparent text-[#f0f0f5] text-base placeholder-[#4a4a5a] outline-none border-0 resize-none leading-relaxed'
+const cta   = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+// ─────────────────────────────────────────────────────────────────────────────
+
 type Category = 'ideia' | 'resolver' | 'incomoda'
 type InboxItem = { id: string; content: string; category: Category; created_at: string }
 
-const CATEGORIES: { value: Category; label: string; emoji: string; color: string }[] = [
-  { value: 'ideia', label: 'Ideia', emoji: '💡', color: 'text-yellow-400 bg-yellow-950/40 border-yellow-800/50' },
-  { value: 'resolver', label: 'Resolver', emoji: '🔧', color: 'text-blue-400 bg-blue-950/40 border-blue-800/50' },
-  { value: 'incomoda', label: 'Incomoda', emoji: '😤', color: 'text-red-400 bg-red-950/40 border-red-800/50' },
+const CATEGORIES: { value: Category; label: string; emoji: string; color: string; dim: string }[] = [
+  { value: 'ideia',    label: 'Ideia',   emoji: '💡', color: 'text-[#e8b84b]', dim: 'bg-[#2d2a1f]' },
+  { value: 'resolver', label: 'Resolver',emoji: '🔧', color: 'text-[#5b94d6]', dim: 'bg-[#1f2d45]' },
+  { value: 'incomoda', label: 'Incomoda',emoji: '😤', color: 'text-[#d66b5b]', dim: 'bg-[#2d1f1f]' },
 ]
 
 export default function InboxPage() {
@@ -24,9 +30,7 @@ export default function InboxPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data } = await supabase
-      .from('inbox_items')
-      .select('*')
-      .eq('user_id', user.id)
+      .from('inbox_items').select('*').eq('user_id', user.id)
       .order('created_at', { ascending: false })
     if (data) setItems(data)
   }, [supabase])
@@ -42,8 +46,7 @@ export default function InboxPage() {
     const { data } = await supabase
       .from('inbox_items')
       .insert({ user_id: user.id, content: content.trim(), category })
-      .select()
-      .single()
+      .select().single()
     if (data) setItems(prev => [data, ...prev])
     setContent('')
     setLoading(false)
@@ -55,108 +58,117 @@ export default function InboxPage() {
   }
 
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
-
   const getCat = (v: Category) => CATEGORIES.find(c => c.value === v)!
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+
+      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-100">Inbox Mental</h2>
-        <p className="text-gray-500 text-sm mt-0.5">Capture o caos antes que some</p>
+        <h2 className="text-3xl font-bold text-[#f0f0f5]">Inbox</h2>
+        <p className="text-[#88889a] text-sm mt-1">Tire da cabeça. Organize depois.</p>
       </div>
 
-      {/* Capture form */}
-      <form onSubmit={handleCapture} className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-3">
-        <textarea
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          rows={3}
-          placeholder="O que está na sua cabeça agora?"
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none"
-        />
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2 flex-1">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.value}
-                type="button"
-                onClick={() => setCategory(cat.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                  category === cat.value
-                    ? cat.color
-                    : 'text-gray-500 border-gray-700 hover:border-gray-600'
-                }`}
-              >
-                {cat.emoji} {cat.label}
-              </button>
-            ))}
-          </div>
-          <button
-            type="submit"
-            disabled={loading || !content.trim()}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-          >
-            Capturar
-          </button>
+      {/* Capture */}
+      <form onSubmit={handleCapture} className={card + ' space-y-4'}>
+        <div className="border-b border-[rgba(255,255,255,0.07)] pb-4">
+          <textarea
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            rows={3}
+            placeholder="O que está ocupando sua mente?"
+            className={tarea}
+          />
+          <p className="text-[#4a4a5a] text-xs mt-1">Ideia, medo, tarefa, qualquer coisa</p>
         </div>
+
+        {/* Category selector */}
+        <div className="flex gap-2">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.value} type="button"
+              onClick={() => setCategory(cat.value)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-colors ${
+                category === cat.value
+                  ? `${cat.dim} ${cat.color}`
+                  : 'bg-[#2d2d33] text-[#4a4a5a] hover:text-[#88889a]'
+              }`}
+            >
+              {cat.emoji} {cat.label}
+            </button>
+          ))}
+        </div>
+
+        <button type="submit" disabled={loading || !content.trim()} className={cta}>
+          {loading ? 'Capturando...' : 'Capturar'}
+        </button>
       </form>
 
       {/* Filter */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-            filter === 'all' ? 'text-gray-100 bg-gray-700 border-gray-600' : 'text-gray-500 border-gray-800 hover:border-gray-700'
-          }`}
-        >
-          Todos ({items.length})
-        </button>
-        {CATEGORIES.map(cat => (
+      {items.length > 0 && (
+        <div className="flex gap-2">
           <button
-            key={cat.value}
-            onClick={() => setFilter(cat.value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              filter === cat.value ? cat.color : 'text-gray-500 border-gray-800 hover:border-gray-700'
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              filter === 'all' ? 'bg-[#252529] text-[#f0f0f5]' : 'text-[#4a4a5a] hover:text-[#88889a]'
             }`}
           >
-            {cat.emoji} {items.filter(i => i.category === cat.value).length}
+            Todos ({items.length})
           </button>
-        ))}
-      </div>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.value}
+              onClick={() => setFilter(cat.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                filter === cat.value
+                  ? `${cat.dim} ${cat.color}`
+                  : 'text-[#4a4a5a] hover:text-[#88889a]'
+              }`}
+            >
+              {cat.emoji} {items.filter(i => i.category === cat.value).length}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* List */}
-      <div className="space-y-2">
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-600 text-sm">
-            Nenhum item capturado ainda
-          </div>
-        )}
-        {filtered.map(item => {
-          const cat = getCat(item.category)
-          return (
-            <div key={item.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-start gap-3 group">
-              <div className="flex-1 min-w-0">
-                <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${cat.color}`}>
-                    {cat.emoji} {cat.label}
-                  </span>
-                  <span className="text-gray-600 text-xs">
-                    {new Date(item.created_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                  </span>
+      {filtered.length === 0 && items.length === 0 && (
+        <div className="text-center py-16 text-[#4a4a5a]">
+          <p className="text-4xl mb-3">🧠</p>
+          <p className="text-sm">Nenhum item capturado ainda</p>
+        </div>
+      )}
+
+      {filtered.length > 0 && (
+        <div className={card + ' divide-y divide-[rgba(255,255,255,0.07)] p-0 overflow-hidden'}>
+          {filtered.map(item => {
+            const cat = getCat(item.category)
+            return (
+              <div key={item.id} className="flex items-start gap-3 px-5 py-4 group">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#f0f0f5] text-sm leading-relaxed">{item.content}</p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className={`text-xs font-medium ${cat.color}`}>{cat.emoji} {cat.label}</span>
+                    <span className="text-[#4a4a5a] text-xs">
+                      {new Date(item.created_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleDelete(item.id)}
+                  className="text-[#2d2d33] hover:text-[#d66b5b] transition-colors opacity-0 group-hover:opacity-100 text-xl leading-none shrink-0 mt-0.5"
+                >×</button>
               </div>
-              <button
-                onClick={() => handleDelete(item.id)}
-                className="text-gray-700 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 text-lg leading-none mt-0.5 shrink-0"
-                title="Deletar"
-              >
-                ×
-              </button>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
+
+      {items.length > 0 && (
+        <p className="text-[#88889a] text-sm text-center pb-2">
+          Você tem {items.length} item{items.length !== 1 ? 's' : ''} na mente.
+        </p>
+      )}
     </div>
   )
 }

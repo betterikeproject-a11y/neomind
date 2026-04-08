@@ -19,8 +19,13 @@ const defaultForm = {
   notes: '', watched_at: new Date().toISOString().split('T')[0],
 }
 
-const inputClass = 'w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors'
-const labelClass = 'text-xs text-gray-500 mb-1.5 block'
+const card   = 'bg-[#252529] rounded-2xl p-5'
+const inp    = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const tarea  = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0 resize-none'
+const sel    = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const cta    = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+const lbl    = 'text-sm text-[#88889a] mb-2 block'
+const div_   = 'border-t border-[rgba(255,255,255,0.07)]'
 
 function Stars({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
@@ -28,7 +33,7 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
       {[1, 2, 3, 4, 5].map(n => (
         <button
           key={n} type="button" onClick={() => onChange(value === n ? 0 : n)}
-          className={`text-2xl leading-none transition-colors ${n <= value ? 'text-yellow-400' : 'text-gray-700 hover:text-yellow-600'}`}
+          className={`text-xl transition-colors ${n <= value ? 'text-[#5b94d6]' : 'text-[#2d2d33] hover:text-[#3d3d4d]'}`}
         >★</button>
       ))}
     </div>
@@ -36,9 +41,9 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
 }
 
 function StarDisplay({ value }: { value: number | null }) {
-  if (!value) return <span className="text-gray-600 text-sm">Sem avaliação</span>
+  if (!value) return <span className="text-[#4a4a5a] text-sm">Sem avaliação</span>
   return (
-    <span className="text-yellow-400 text-sm">{'★'.repeat(value)}{'☆'.repeat(5 - value)}</span>
+    <span className="text-[#5b94d6] text-sm">{'★'.repeat(value)}{'☆'.repeat(5 - value)}</span>
   )
 }
 
@@ -105,80 +110,77 @@ export default function FilmesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-100">Filmes</h2>
-          <p className="text-gray-500 text-sm mt-0.5">{movies.length} filme{movies.length !== 1 ? 's' : ''} registrado{movies.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-3xl font-bold text-[#f0f0f5]">Filmes</h2>
+          <p className="text-[#88889a] text-sm mt-1">{movies.length} filme{movies.length !== 1 ? 's' : ''} registrado{movies.length !== 1 ? 's' : ''}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#252529] text-[#5b94d6] text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-[#2d2d33]"
         >
           {showForm ? 'Cancelar' : '+ Registrar filme'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-gray-900 rounded-2xl p-5 border border-gray-800 space-y-4">
-          <h3 className="text-sm font-semibold text-gray-400">Registrar filme assistido</h3>
+        <form onSubmit={handleSubmit} className={`${card} space-y-4`}>
+          <h3 className="text-sm font-semibold text-[#88889a]">Registrar filme assistido</h3>
 
           <div>
-            <label className={labelClass}>Título *</label>
+            <label className={lbl}>Título *</label>
             <input
               type="text" required value={form.title}
               onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
               placeholder="Nome do filme"
-              className={inputClass}
+              className={inp}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Diretor</label>
+              <label className={lbl}>Diretor</label>
               <input
                 type="text" value={form.director}
                 onChange={e => setForm(p => ({ ...p, director: e.target.value }))}
                 placeholder="Nome do diretor"
-                className={inputClass}
+                className={inp}
               />
             </div>
             <div>
-              <label className={labelClass}>Ano do filme</label>
+              <label className={lbl}>Ano do filme</label>
               <input
                 type="number" value={form.year} min={1888} max={new Date().getFullYear() + 2}
                 onChange={e => setForm(p => ({ ...p, year: e.target.value }))}
                 placeholder="ex: 2024"
-                className={inputClass}
+                className={inp}
               />
             </div>
           </div>
 
           <div>
-            <label className={labelClass}>Data que assistiu</label>
+            <label className={lbl}>Data que assistiu</label>
             <input
               type="date" value={form.watched_at} max={new Date().toISOString().split('T')[0]}
               onChange={e => setForm(p => ({ ...p, watched_at: e.target.value }))}
-              className={inputClass}
+              className={inp}
             />
           </div>
 
           <div>
-            <label className={labelClass}>Avaliação</label>
+            <label className={lbl}>Avaliação</label>
             <Stars value={form.rating} onChange={v => setForm(p => ({ ...p, rating: v }))} />
           </div>
 
           <div>
-            <label className={labelClass}>Notas / impressões</label>
+            <label className={lbl}>Notas / impressões</label>
             <textarea
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
               rows={3} placeholder="O que achei, o que me marcou..."
-              className={inputClass + ' resize-none'}
+              className={tarea}
             />
           </div>
 
-          <button
-            type="submit" disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
+          <button type="submit" disabled={saving} className={cta}>
             {saving ? 'Salvando...' : 'Salvar filme'}
           </button>
         </form>
@@ -186,7 +188,7 @@ export default function FilmesPage() {
 
       {/* List grouped by year */}
       {movies.length === 0 && (
-        <div className="text-center py-16 text-gray-600">
+        <div className="text-center py-16 text-[#4a4a5a]">
           <p className="text-4xl mb-3">🎬</p>
           <p className="text-sm">Nenhum filme registrado ainda</p>
         </div>
@@ -194,32 +196,35 @@ export default function FilmesPage() {
 
       {years.map(year => (
         <div key={year}>
-          <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">{year}</h3>
-          <div className="space-y-2">
-            {grouped[year].map(m => (
-              <div key={m.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-start gap-4 group">
-                <span className="text-2xl mt-0.5 shrink-0">🎬</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-gray-100 font-medium">
-                        {m.title}
-                        {m.year && <span className="text-gray-500 text-sm font-normal ml-2">({m.year})</span>}
-                      </p>
-                      {m.director && <p className="text-gray-500 text-xs mt-0.5">dir. {m.director}</p>}
+          <h3 className="text-xs font-semibold text-[#4a4a5a] uppercase tracking-wider mb-3">{year}</h3>
+          <div className={card}>
+            {grouped[year].map((m, idx) => (
+              <div key={m.id}>
+                {idx > 0 && <div className={`${div_} my-4`} />}
+                <div className="flex items-start gap-4 group">
+                  <span className="text-2xl mt-0.5 shrink-0">🎬</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-[#f0f0f5] font-medium">
+                          {m.title}
+                          {m.year && <span className="text-[#88889a] text-sm font-normal ml-2">({m.year})</span>}
+                        </p>
+                        {m.director && <p className="text-[#88889a] text-xs mt-0.5">dir. {m.director}</p>}
+                      </div>
+                      <button
+                        onClick={() => handleDelete(m.id)}
+                        className="text-[#4a4a5a] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-lg leading-none"
+                      >×</button>
                     </div>
-                    <button
-                      onClick={() => handleDelete(m.id)}
-                      className="text-gray-700 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0 text-lg leading-none"
-                    >×</button>
+                    <div className="flex items-center gap-3 mt-2">
+                      <StarDisplay value={m.rating} />
+                      <span className="text-[#4a4a5a] text-xs">
+                        {new Date(m.watched_at + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+                    {m.notes && <p className="text-[#88889a] text-sm mt-2 leading-relaxed">{m.notes}</p>}
                   </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <StarDisplay value={m.rating} />
-                    <span className="text-gray-600 text-xs">
-                      {new Date(m.watched_at + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-                    </span>
-                  </div>
-                  {m.notes && <p className="text-gray-500 text-sm mt-2 leading-relaxed">{m.notes}</p>}
                 </div>
               </div>
             ))}

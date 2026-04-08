@@ -78,6 +78,14 @@ type DayData = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const card   = 'bg-[#252529] rounded-2xl p-5'
+const inp    = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const tarea  = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm placeholder-[#4a4a5a] outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0 resize-none'
+const sel    = 'w-full bg-[#2d2d33] rounded-xl px-4 py-3.5 text-[#f0f0f5] text-sm outline-none focus:ring-1 focus:ring-[#5b94d6] transition-all border-0'
+const cta    = 'w-full bg-[#1f2d45] text-[#5b94d6] font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40'
+const lbl    = 'text-sm text-[#88889a] mb-2 block'
+const div_   = 'border-t border-[rgba(255,255,255,0.07)]'
+
 const SLIDERS = [
   { key: 'humor', label: 'Humor', emoji: '😊' },
   { key: 'energia', label: 'Energia', emoji: '⚡' },
@@ -206,15 +214,15 @@ export default function HistoricoPage() {
 
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-100">Histórico</h2>
-        <p className="text-gray-500 text-sm mt-0.5">Navegue pelo que aconteceu em cada dia</p>
+        <h2 className="text-3xl font-bold text-[#f0f0f5]">Histórico</h2>
+        <p className="text-[#88889a] text-sm mt-1">Navegue pelo que aconteceu em cada dia</p>
       </div>
 
       {/* Date navigator */}
-      <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800 flex items-center gap-3">
+      <div className={`${card} flex items-center gap-3`}>
         <button
           onClick={() => navigate(-1)}
-          className="text-gray-400 hover:text-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+          className="text-[#88889a] hover:text-[#f0f0f5] px-3 py-1.5 rounded-xl hover:bg-[#2d2d33] transition-colors text-sm font-medium"
         >
           ← Anterior
         </button>
@@ -225,15 +233,15 @@ export default function HistoricoPage() {
             value={date}
             max={today}
             onChange={e => { if (e.target.value && e.target.value <= today) setDate(e.target.value) }}
-            className="bg-transparent text-gray-200 text-sm font-medium text-center focus:outline-none cursor-pointer"
+            className="bg-transparent text-[#f0f0f5] text-sm font-medium text-center focus:outline-none cursor-pointer"
           />
-          <p className="text-gray-500 text-xs mt-0.5 capitalize">{formatDate(date)}</p>
+          <p className="text-[#88889a] text-xs mt-0.5 capitalize">{formatDate(date)}</p>
         </div>
 
         <button
           onClick={() => navigate(1)}
           disabled={isToday || isFuture}
-          className="text-gray-400 hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg hover:bg-gray-800 disabled:hover:bg-transparent transition-colors text-sm font-medium"
+          className="text-[#88889a] hover:text-[#f0f0f5] disabled:opacity-30 disabled:cursor-not-allowed px-3 py-1.5 rounded-xl hover:bg-[#2d2d33] disabled:hover:bg-transparent transition-colors text-sm font-medium"
         >
           Próximo →
         </button>
@@ -241,32 +249,32 @@ export default function HistoricoPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="text-center py-12 text-gray-600 text-sm">Carregando...</div>
+        <div className="text-center py-12 text-[#4a4a5a] text-sm">Carregando...</div>
       )}
 
       {/* Empty state */}
       {!loading && isEmpty && (
-        <div className="text-center py-16 text-gray-600">
+        <div className="text-center py-16 text-[#4a4a5a]">
           <p className="text-4xl mb-3">📭</p>
           <p className="text-sm">Nenhum registro encontrado neste dia.</p>
           {isToday && (
-            <p className="text-xs text-gray-700 mt-1">Use o Cockpit, Diário ou Inbox para começar a registrar.</p>
+            <p className="text-xs text-[#4a4a5a] mt-1">Use o Cockpit, Diário ou Inbox para começar a registrar.</p>
           )}
         </div>
       )}
 
       {/* Cockpit */}
       {!loading && data.checkin && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">⚡ Cockpit</h3>
+        <section className={card}>
+          <div className="pb-3 mb-4">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">⚡ Cockpit</h3>
           </div>
-          <div className="p-5 space-y-4">
+          <div className={`${div_} pt-4 space-y-4`}>
 
             {data.checkin.mission && (
               <div>
-                <p className="text-xs text-gray-600 mb-1">Missão do dia</p>
-                <p className="text-gray-200 text-sm font-medium">"{data.checkin.mission}"</p>
+                <p className="text-xs text-[#4a4a5a] mb-1">Missão do dia</p>
+                <p className="text-[#f0f0f5] text-sm font-medium">"{data.checkin.mission}"</p>
               </div>
             )}
 
@@ -276,18 +284,18 @@ export default function HistoricoPage() {
                 const val = data.checkin![key as keyof Checkin] as number
                 return (
                   <div key={key} className="text-center">
-                    <p className="text-xs text-gray-500 mb-1">{emoji}</p>
+                    <p className="text-xs text-[#88889a] mb-1">{emoji}</p>
                     <div className="flex items-end justify-center gap-0.5 h-8">
                       {Array.from({ length: 10 }, (_, i) => (
                         <div
                           key={i}
-                          className={`w-1 rounded-sm transition-all ${i < val ? sliderColor(val) : 'bg-gray-800'}`}
+                          className={`w-1 rounded-sm transition-all ${i < val ? sliderColor(val) : 'bg-[#2d2d33]'}`}
                           style={{ height: `${(i + 1) * 10}%` }}
                         />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 font-medium">{val}</p>
-                    <p className="text-xs text-gray-600">{label}</p>
+                    <p className="text-xs text-[#88889a] mt-1 font-medium">{val}</p>
+                    <p className="text-xs text-[#4a4a5a]">{label}</p>
                   </div>
                 )
               })}
@@ -305,8 +313,8 @@ export default function HistoricoPage() {
                   if (!text) return null
                   return (
                     <div key={key}>
-                      <p className="text-xs text-gray-600 mb-0.5">{label}</p>
-                      <p className="text-gray-300 text-sm">{text}</p>
+                      <p className="text-xs text-[#4a4a5a] mb-0.5">{label}</p>
+                      <p className="text-[#f0f0f5] text-sm">{text}</p>
                     </div>
                   )
                 })}
@@ -318,25 +326,25 @@ export default function HistoricoPage() {
 
       {/* Diário */}
       {!loading && data.journal && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">📖 Diário</h3>
+        <section className={card}>
+          <div className="pb-3 mb-4 flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">📖 Diário</h3>
             {data.journal.mode === 'poetico' && data.journal.poetic_content && (
-              <span className="text-xs text-indigo-400">✨ versão poética disponível</span>
+              <span className="text-xs text-[#5b94d6]">✨ versão poética disponível</span>
             )}
           </div>
-          <div className="p-5 space-y-4">
+          <div className={`${div_} pt-4 space-y-4`}>
             {journalSections.map((s, i) => (
               <div key={i}>
-                <p className="text-xs text-gray-600 mb-1">{s.label}</p>
-                <p className="text-gray-300 text-sm leading-relaxed">{s.text}</p>
+                <p className="text-xs text-[#4a4a5a] mb-1">{s.label}</p>
+                <p className="text-[#f0f0f5] text-sm leading-relaxed">{s.text}</p>
               </div>
             ))}
 
             {data.journal.mode === 'poetico' && data.journal.poetic_content && (
-              <div className="bg-gray-800/50 border border-indigo-900/30 rounded-xl p-4">
-                <p className="text-xs text-indigo-400 mb-2">Versão poética</p>
-                <p className="text-gray-300 text-sm leading-relaxed italic whitespace-pre-wrap">
+              <div className="bg-[#2d2d33] rounded-xl p-4">
+                <p className="text-xs text-[#5b94d6] mb-2">Versão poética</p>
+                <p className="text-[#f0f0f5] text-sm leading-relaxed italic whitespace-pre-wrap">
                   {data.journal.poetic_content}
                 </p>
               </div>
@@ -347,21 +355,24 @@ export default function HistoricoPage() {
 
       {/* Inbox */}
       {!loading && data.inbox.length > 0 && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+        <section className={card}>
+          <div className="pb-3 mb-4">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">
               🧠 Inbox capturado ({data.inbox.length})
             </h3>
           </div>
-          <div className="p-5 space-y-2">
-            {data.inbox.map(item => {
+          <div className={`${div_} pt-4 space-y-3`}>
+            {data.inbox.map((item, idx) => {
               const cat = INBOX_CAT[item.category]
               return (
-                <div key={item.id} className="flex items-start gap-3">
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border shrink-0 mt-0.5 ${cat.color}`}>
-                    {cat.emoji} {cat.label}
-                  </span>
-                  <p className="text-gray-300 text-sm leading-relaxed">{item.content}</p>
+                <div key={item.id}>
+                  {idx > 0 && <div className={`${div_} mb-3`} />}
+                  <div className="flex items-start gap-3">
+                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border shrink-0 mt-0.5 ${cat.color}`}>
+                      {cat.emoji} {cat.label}
+                    </span>
+                    <p className="text-[#f0f0f5] text-sm leading-relaxed">{item.content}</p>
+                  </div>
                 </div>
               )
             })}
@@ -371,24 +382,27 @@ export default function HistoricoPage() {
 
       {/* Metas criadas */}
       {!loading && data.goals.length > 0 && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+        <section className={card}>
+          <div className="pb-3 mb-4">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">
               🎯 Metas criadas ({data.goals.length})
             </h3>
           </div>
-          <div className="p-5 space-y-3">
-            {data.goals.map(goal => {
+          <div className={`${div_} pt-4 space-y-3`}>
+            {data.goals.map((goal, idx) => {
               const st = GOAL_STATUS[goal.status] ?? { label: goal.status, color: 'text-gray-500 border-gray-700' }
               return (
-                <div key={goal.id} className="flex items-start gap-3">
-                  <span className="text-base">{AREAS[goal.area] ?? '📌'}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-200 text-sm font-medium">{goal.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-xs border px-2 py-0.5 rounded-full ${st.color}`}>{st.label}</span>
-                      <span className="text-xs text-gray-600">{goal.progress}% concluído</span>
-                      <span className="text-xs text-gray-600">· {goal.deadline_days} dias</span>
+                <div key={goal.id}>
+                  {idx > 0 && <div className={`${div_} mb-3`} />}
+                  <div className="flex items-start gap-3">
+                    <span className="text-base">{AREAS[goal.area] ?? '📌'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[#f0f0f5] text-sm font-medium">{goal.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-xs border px-2 py-0.5 rounded-full ${st.color}`}>{st.label}</span>
+                        <span className="text-xs text-[#4a4a5a]">{goal.progress}% concluído</span>
+                        <span className="text-xs text-[#4a4a5a]">· {goal.deadline_days} dias</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -400,26 +414,29 @@ export default function HistoricoPage() {
 
       {/* Filmes assistidos */}
       {!loading && data.movies.length > 0 && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+        <section className={card}>
+          <div className="pb-3 mb-4">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">
               🎬 Filmes assistidos ({data.movies.length})
             </h3>
           </div>
-          <div className="p-5 space-y-3">
-            {data.movies.map(m => (
-              <div key={m.id} className="flex items-start gap-3">
-                <span className="text-base shrink-0">🎬</span>
-                <div>
-                  <p className="text-gray-200 text-sm font-medium">
-                    {m.title}
-                    {m.year && <span className="text-gray-500 font-normal ml-1.5">({m.year})</span>}
-                  </p>
-                  {m.director && <p className="text-gray-500 text-xs">dir. {m.director}</p>}
-                  {m.rating && (
-                    <p className="text-yellow-400 text-xs mt-0.5">{'★'.repeat(m.rating)}{'☆'.repeat(5 - m.rating)}</p>
-                  )}
-                  {m.notes && <p className="text-gray-500 text-sm mt-1">{m.notes}</p>}
+          <div className={`${div_} pt-4 space-y-3`}>
+            {data.movies.map((m, idx) => (
+              <div key={m.id}>
+                {idx > 0 && <div className={`${div_} mb-3`} />}
+                <div className="flex items-start gap-3">
+                  <span className="text-base shrink-0">🎬</span>
+                  <div>
+                    <p className="text-[#f0f0f5] text-sm font-medium">
+                      {m.title}
+                      {m.year && <span className="text-[#88889a] font-normal ml-1.5">({m.year})</span>}
+                    </p>
+                    {m.director && <p className="text-[#88889a] text-xs">dir. {m.director}</p>}
+                    {m.rating && (
+                      <p className="text-[#5b94d6] text-xs mt-0.5">{'★'.repeat(m.rating)}{'☆'.repeat(5 - m.rating)}</p>
+                    )}
+                    {m.notes && <p className="text-[#88889a] text-sm mt-1">{m.notes}</p>}
+                  </div>
                 </div>
               </div>
             ))}
@@ -429,27 +446,30 @@ export default function HistoricoPage() {
 
       {/* Músicas ouvidas */}
       {!loading && data.music.length > 0 && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+        <section className={card}>
+          <div className="pb-3 mb-4">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">
               🎵 Músicas ouvidas ({data.music.length})
             </h3>
           </div>
-          <div className="p-5 space-y-3">
-            {data.music.map(l => (
-              <div key={l.id} className="flex items-start gap-3">
-                <span className="text-base shrink-0">🎵</span>
-                <div>
-                  <p className="text-gray-200 text-sm font-medium">{l.artist}</p>
-                  {(l.album || l.track) && (
-                    <p className="text-gray-500 text-xs">{[l.album, l.track].filter(Boolean).join(' · ')}</p>
-                  )}
-                  {l.genre && (
-                    <span className="inline-block text-xs text-indigo-400 bg-indigo-950/30 border border-indigo-900/40 px-2 py-0.5 rounded-full mt-1">{l.genre}</span>
-                  )}
-                  {l.rating && (
-                    <p className="text-yellow-400 text-xs mt-0.5">{'★'.repeat(l.rating)}{'☆'.repeat(5 - l.rating)}</p>
-                  )}
+          <div className={`${div_} pt-4 space-y-3`}>
+            {data.music.map((l, idx) => (
+              <div key={l.id}>
+                {idx > 0 && <div className={`${div_} mb-3`} />}
+                <div className="flex items-start gap-3">
+                  <span className="text-base shrink-0">🎵</span>
+                  <div>
+                    <p className="text-[#f0f0f5] text-sm font-medium">{l.artist}</p>
+                    {(l.album || l.track) && (
+                      <p className="text-[#88889a] text-xs">{[l.album, l.track].filter(Boolean).join(' · ')}</p>
+                    )}
+                    {l.genre && (
+                      <span className="inline-block text-xs px-2.5 py-1 rounded-full bg-[#1f2d45] text-[#5b94d6] mt-1">{l.genre}</span>
+                    )}
+                    {l.rating && (
+                      <p className="text-[#5b94d6] text-xs mt-0.5">{'★'.repeat(l.rating)}{'☆'.repeat(5 - l.rating)}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -459,22 +479,25 @@ export default function HistoricoPage() {
 
       {/* Livros terminados */}
       {!loading && data.booksFinished.length > 0 && (
-        <section className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="px-5 pt-4 pb-3 border-b border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+        <section className={card}>
+          <div className="pb-3 mb-4">
+            <h3 className="text-xs font-semibold text-[#88889a] uppercase tracking-wider">
               📚 Livros terminados ({data.booksFinished.length})
             </h3>
           </div>
-          <div className="p-5 space-y-3">
-            {data.booksFinished.map(b => (
-              <div key={b.id} className="flex items-start gap-3">
-                <span className="text-base shrink-0">📚</span>
-                <div>
-                  <p className="text-gray-200 text-sm font-medium">{b.title}</p>
-                  {b.author && <p className="text-gray-500 text-xs">por {b.author}</p>}
-                  {b.rating && (
-                    <p className="text-yellow-400 text-xs mt-0.5">{'★'.repeat(b.rating)}{'☆'.repeat(5 - b.rating)}</p>
-                  )}
+          <div className={`${div_} pt-4 space-y-3`}>
+            {data.booksFinished.map((b, idx) => (
+              <div key={b.id}>
+                {idx > 0 && <div className={`${div_} mb-3`} />}
+                <div className="flex items-start gap-3">
+                  <span className="text-base shrink-0">📚</span>
+                  <div>
+                    <p className="text-[#f0f0f5] text-sm font-medium">{b.title}</p>
+                    {b.author && <p className="text-[#88889a] text-xs">por {b.author}</p>}
+                    {b.rating && (
+                      <p className="text-[#5b94d6] text-xs mt-0.5">{'★'.repeat(b.rating)}{'☆'.repeat(5 - b.rating)}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -16,53 +16,39 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-    } else {
-      router.push('/cockpit')
-      router.refresh()
-    }
+    if (error) { setError(error.message); setLoading(false) }
+    else { router.push('/cockpit'); router.refresh() }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-nm-bg px-5">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-indigo-400 tracking-tight">NeoMind</h1>
-          <p className="text-gray-500 mt-1 text-sm">Cockpit mental pessoal</p>
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold text-nm-text">NeoMind</h1>
+          <p className="text-nm-muted text-sm mt-1">Cockpit mental pessoal</p>
         </div>
 
-        <form onSubmit={handleLogin} className="bg-gray-900 rounded-2xl p-6 border border-gray-800 space-y-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-              placeholder="seu@email.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Senha</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
+        <form onSubmit={handleLogin} className="space-y-3">
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            placeholder="Email"
+            className="w-full bg-nm-surface2 rounded-xl px-4 py-4 text-nm-text text-sm placeholder-nm-faint outline-none focus:ring-1 focus:ring-nm-blue transition-all border-0"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            placeholder="Senha"
+            className="w-full bg-nm-surface2 rounded-xl px-4 py-4 text-nm-text text-sm placeholder-nm-faint outline-none focus:ring-1 focus:ring-nm-blue transition-all border-0"
+          />
 
           {error && (
-            <p className="text-red-400 text-sm bg-red-950/50 border border-red-900 rounded-lg px-3 py-2">
+            <p className="text-red-400 text-sm bg-red-950/30 rounded-xl px-4 py-3">
               {error}
             </p>
           )}
@@ -70,7 +56,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors"
+            className="w-full bg-nm-blue-dim text-nm-blue font-semibold py-4 rounded-xl text-base transition-colors hover:bg-[#243553] disabled:opacity-40 mt-2"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
